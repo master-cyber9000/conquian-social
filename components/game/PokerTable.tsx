@@ -32,6 +32,7 @@ interface PokerTableProps {
   localPlayerId2: string; // passed separately to avoid confusion
   forcedCardId?: string | null;
   speakingPlayerIds?: string[];
+  volumeMapRef?: React.MutableRefObject<Map<string, number>>;
 }
 
 // Map seat positions around the table
@@ -65,6 +66,7 @@ export default function PokerTable({
   localPlayerId2,
   forcedCardId,
   speakingPlayerIds = [],
+  volumeMapRef,
 }: PokerTableProps) {
   const { lang } = useLanguage();
 
@@ -164,6 +166,7 @@ export default function PokerTable({
                 onSelectTableCard={onSelectTableCard}
                 forcedCardId={forcedCardId}
                 isSpeaking={speakingPlayerIds.includes(player.display_name)}
+                volumeMapRef={volumeMapRef}
               />
             </div>
           );

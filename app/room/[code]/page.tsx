@@ -39,7 +39,7 @@ import CharacterCreation from '@/components/character/CharacterCreation';
 import Button from '@/components/ui/Button';
 import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useParticipants } from '@livekit/components-react';
 
-function VoiceController({ isMuted, onSpeakingUpdate }: { isMuted: boolean; onSpeakingUpdate: (ids: string[]) => void }) {
+function VoiceController({ isMuted, onSpeakingUpdate, volumeMapRef }: { isMuted: boolean; onSpeakingUpdate: (ids: string[]) => void; volumeMapRef: React.MutableRefObject<Map<string, number>> }) {
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
 
@@ -53,6 +53,18 @@ function VoiceController({ isMuted, onSpeakingUpdate }: { isMuted: boolean; onSp
     const speakers = participants.filter(p => p.isSpeaking).map(p => p.identity);
     onSpeakingUpdate(speakers);
   }, [participants, onSpeakingUpdate]);
+
+  useEffect(() => {
+    let frame: number;
+    const updateVolumes = () => {
+      participants.forEach((p) => {
+        volumeMapRef.current.set(p.identity, p.audioLevel || 0);
+      });
+      frame = requestAnimationFrame(updateVolumes);
+    };
+    frame = requestAnimationFrame(updateVolumes);
+    return () => cancelAnimationFrame(frame);
+  }, [participants, volumeMapRef]);
 
   return null;
 }
@@ -70,6 +82,7 @@ export default function RoomPage() {
   const { messages, sendMessage } = useChat(code);
 
   // ── Local UI state ────────────────────────────────────────────────────────
+  const volumeMapRef = useRef<Map<string, number>>(new Map());
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [selectedTableCards, setSelectedTableCards] = useState<Set<string>>(new Set());
 
@@ -833,7 +846,7 @@ export default function RoomPage() {
                   onExtendMeld={() => {}} extendableMelds={new Set()}
                   offerCountdown={0} discardClaims={{}} localPlayerId2={profile?.playerId ?? ''}
                   selectedTableCardIds={new Set()} onSelectTableCard={() => {}}
-                  speakingPlayerIds={speakingIds}
+                  speakingPlayerIds={speakingIds} volumeMapRef={volumeMapRef}
                 />
               </div>
 
@@ -887,7 +900,7 @@ export default function RoomPage() {
                 discardClaims={gameState.discard_claims ?? {}}
                 localPlayerId2={profile?.playerId ?? ''}
                 forcedCardId={forcedCardId}
-                speakingPlayerIds={speakingIds}
+                speakingPlayerIds={speakingIds} volumeMapRef={volumeMapRef}
               />
 
               {!isSpectator && (
@@ -962,7 +975,7 @@ export default function RoomPage() {
           token={liveKitToken}
           className="hidden"
         >
-          <VoiceController isMuted={isMuted} onSpeakingUpdate={setSpeakingIds} />
+          <VoiceController isMuted={isMuted} onSpeakingUpdate={setSpeakingIds} volumeMapRef={volumeMapRef} />
           {!isDeafened && <RoomAudioRenderer />}
         </LiveKitRoom>
       )}

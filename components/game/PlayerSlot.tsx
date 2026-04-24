@@ -1,12 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Player } from '@/lib/supabase';
 import { CardType } from '@/lib/supabase';
 import { countMeldedCards } from '@/lib/gameLogic';
 import MeldGroup from './MeldGroup';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/lib/i18n';
+
+function VolumeRing({ identity, volumeMapRef }: { identity: string; volumeMapRef: React.MutableRefObject<Map<string, number>> }) {
+  const ringRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let frame: number;
+    const animate = () => {
+      if (ringRef.current && volumeMapRef?.current) {
+         const vol = volumeMapRef.current.get(identity) || 0;
+         const scale = 1 + (vol * 4.5);
+         ringRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [identity, volumeMapRef]);
+
+  return (
+    <div 
+      ref={ringRef}
+      className="absolute top-1/2 left-1/2 w-[72px] h-[72px] rounded-full bg-cyan-500/40 blur-md pointer-events-none transition-transform duration-[50ms] z-0"
+      style={{ transform: 'translate(-50%, -50%) scale(1)' }}
+    />
+  );
+}
 
 const BORDER_COLORS: Record<string, string> = {
   gold: '#c9a84c',
@@ -33,6 +59,7 @@ interface PlayerSlotProps {
   onSelectTableCard?: (cardId: string) => void;
   forcedCardId?: string | null;
   isSpeaking?: boolean;
+  volumeMapRef?: React.MutableRefObject<Map<string, number>>;
 }
 
 export default function PlayerSlot({
@@ -51,6 +78,7 @@ export default function PlayerSlot({
   onSelectTableCard,
   forcedCardId,
   isSpeaking = false,
+  volumeMapRef,
 }: PlayerSlotProps) {
   const { lang } = useLanguage();
   const meldedCount = countMeldedCards(melds);
@@ -111,8 +139,8 @@ export default function PlayerSlot({
         )}
 
         {/* Dynamic Voice Activity Expansion Ring */}
-        {isSpeaking && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-green-500/30 blur-md animate-pulse z-0 pointer-events-none transition-opacity duration-300" />
+        {isSpeaking && volumeMapRef && (
+          <VolumeRing identity={player.display_name} volumeMapRef={volumeMapRef} />
         )}
 
         <div
