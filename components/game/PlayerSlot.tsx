@@ -168,7 +168,7 @@ export default function PlayerSlot({
 
         {/* Ready badge */}
         {player.is_ready && (
-          <span className="chip chip-green absolute -bottom-1 text-[10px] px-1.5 py-0">
+          <span className="chip chip-green absolute -bottom-1 z-30 text-[10px] px-1.5 py-0 shadow-[0_4px_10px_rgba(34,197,94,0.3)] border border-green-500/50">
             {t('ready', lang)}
           </span>
         )}

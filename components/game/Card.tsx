@@ -36,10 +36,16 @@ export default function Card({
     lg: 'w-16 h-24',
   };
 
-  const textSizes = {
-    sm: 'text-xs',
-    md: 'text-sm',
-    lg: 'text-base',
+  const rankSizes = {
+    sm: 'text-2xl',
+    md: 'text-[32px]',
+    lg: 'text-[42px]',
+  };
+
+  const suitSizes = {
+    sm: 'text-xl mt-[-4px]',
+    md: 'text-3xl mt-[-6px]',
+    lg: 'text-4xl mt-[-8px]',
   };
 
   const color = isRed(card.suit) ? 'text-red-600' : 'text-gray-900';
@@ -61,28 +67,18 @@ export default function Card({
       onClick={!disabled ? onClick : undefined}
       onKeyDown={!disabled && onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); } : undefined}
       aria-pressed={selected}
-      className={`card-face ${dimensions[size]} flex flex-col justify-between p-1 flex-shrink-0 ${
+      className={`card-face ${dimensions[size]} flex flex-col items-center justify-center py-0.5 flex-shrink-0 relative overflow-hidden ${
         selected ? 'selected' : ''
       } ${
         highlighted === 'green' ? 'ring-[3px] ring-green-500 ring-offset-1 ring-offset-transparent shadow-[0_0_20px_rgba(34,197,94,0.7)] z-10' :
         highlighted ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent shadow-lg shadow-amber-500/40' : ''
       } ${disabled ? 'opacity-60 cursor-not-allowed' : onClick ? 'cursor-pointer' : ''}`}
     >
-      {/* Top-left rank + suit */}
-      <div className={`flex flex-col leading-none ${color} ${textSizes[size]} font-bold`}>
-        <span>{card.rank}</span>
-        <span>{SUIT_SYMBOL[card.suit]}</span>
+      <div className={`leading-none font-black ${color} ${rankSizes[size]} tracking-tighter`}>
+        {card.rank}
       </div>
-
-      {/* Center suit */}
-      <div className={`text-center ${color} ${size === 'lg' ? 'text-xl' : 'text-base'} leading-none`}>
+      <div className={`leading-none ${color} ${suitSizes[size]}`}>
         {SUIT_SYMBOL[card.suit]}
-      </div>
-
-      {/* Bottom-right (rotated) */}
-      <div className={`flex flex-col leading-none ${color} ${textSizes[size]} font-bold rotate-180 self-end`}>
-        <span>{card.rank}</span>
-        <span>{SUIT_SYMBOL[card.suit]}</span>
       </div>
     </div>
   );
