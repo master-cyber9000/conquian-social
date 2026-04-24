@@ -922,9 +922,6 @@ export default function RoomPage() {
           {/* PLAYING */}
           {room?.status === 'playing' && gameState && (
             <div className="flex flex-col items-center gap-4 w-full max-w-[6rem] lg:max-w-5xl px-6 lg:px-28">
-              <div className="text-red-500 font-mono text-xs w-full text-center">
-                DEBUG HAND KEYS: {JSON.stringify(Object.keys(gameState.hands ?? {}))} | PROFILE: {profile?.playerId}
-              </div>
               <PokerTable activePlayers={activePlayers} spectators={spectators}
                 localPlayerId={profile?.playerId ?? ''} gameState={gameState}
                 melds={gameState.melds ?? {}} timeLeft={30} isSpectator={isSpectator}

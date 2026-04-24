@@ -47,7 +47,20 @@ export function useGameState(roomCode: string) {
         },
         (payload) => {
           if (payload.new) {
-            setGameState(normalizeGameState(payload.new));
+            setGameState((prev) => {
+              if (!prev) return normalizeGameState(payload.new);
+              
+              // Postgres logical replication omits TOASTed (large) jsonb columns if they weren't explicitly updated.
+              // This prevents massive arrays like `hands`, `deck`, etc from vanishing from the React state during small updates.
+              const merged = { ...payload.new } as Record<string, unknown>;
+              const bigKeys = ['hands', 'deck', 'melds', 'stock_pile', 'discard_pile'];
+              for (const key of bigKeys) {
+                if (!(key in merged) && prev[key as keyof GameState]) {
+                  merged[key] = prev[key as keyof GameState];
+                }
+              }
+              return normalizeGameState(merged);
+            });
           }
         }
       )
