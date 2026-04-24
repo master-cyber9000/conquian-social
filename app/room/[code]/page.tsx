@@ -863,7 +863,7 @@ export default function RoomPage() {
 
           {/* LOBBY */}
           {room?.status === 'lobby' && (
-            <div className="flex flex-col-reverse lg:flex-row gap-6 lg:gap-12 items-center w-full max-w-[6rem] lg:max-w-5xl">
+            <div className="flex flex-col-reverse lg:flex-row gap-6 lg:gap-12 items-center w-full max-w-full lg:max-w-5xl">
               <div className="flex-1 flex items-center justify-center min-h-[400px] px-6 lg:px-28 w-full">
                 <PokerTable activePlayers={activePlayers} spectators={spectators}
                   localPlayerId={profile?.playerId ?? ''} gameState={gameState} melds={{}}
@@ -921,7 +921,7 @@ export default function RoomPage() {
 
           {/* PLAYING */}
           {room?.status === 'playing' && gameState && (
-            <div className="flex flex-col items-center gap-4 w-full max-w-[6rem] lg:max-w-5xl px-6 lg:px-28">
+            <div className="flex flex-col items-center gap-4 w-full max-w-full lg:max-w-5xl px-6 lg:px-28">
               <PokerTable activePlayers={activePlayers} spectators={spectators}
                 localPlayerId={profile?.playerId ?? ''} gameState={gameState}
                 melds={gameState.melds ?? {}} timeLeft={30} isSpectator={isSpectator}
