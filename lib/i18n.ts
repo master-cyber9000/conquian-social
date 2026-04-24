@@ -49,6 +49,7 @@ export const translations = {
   unmute: { en: 'Unmute', es: 'Activar Micrófono' },
   send: { en: 'Send', es: 'Enviar' },
   leaveRoom: { en: 'Leave Room', es: 'Salir de la Sala' },
+  yourHand: { en: 'yourHand', es: 'tuMano' },
 
   // Character Creation
   characterTitle: { en: 'Create Your Profile', es: 'Crea Tu Perfil' },

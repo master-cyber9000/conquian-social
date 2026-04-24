@@ -16,8 +16,9 @@ interface CardProps {
   selected?: boolean;
   onClick?: () => void;
   disabled?: boolean;
+  size?: 'sm' | 'md' | 'lg';
   faceDown?: boolean;
-  highlighted?: boolean | 'green'; // golden glow for drawn card staging, green for forced cards
+  highlighted?: boolean | 'green';
 }
 
 export default function Card({

@@ -810,6 +810,7 @@ export default function RoomPage() {
                   canClaim={false} canDraw={false} canForce={false}
                   onExtendMeld={() => {}} extendableMelds={new Set()}
                   offerCountdown={0} discardClaims={{}} localPlayerId2={profile?.playerId ?? ''}
+                  selectedTableCardIds={new Set()} onSelectTableCard={() => {}}
                 />
               </div>
 
@@ -862,7 +863,6 @@ export default function RoomPage() {
                 offerCountdown={offerCountdown}
                 discardClaims={gameState.discard_claims ?? {}}
                 localPlayerId2={profile?.playerId ?? ''}
-                isSelfForceDiscard={isSelfForceDiscard}
                 forcedCardId={forcedCardId}
               />
 
