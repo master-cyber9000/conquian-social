@@ -576,11 +576,27 @@ export default function RoomPage() {
       return;
     }
 
-    await updateGameState({
-      hands: updatedHands,
-      melds: updatedMelds,
-      meld_counts: updatedCounts,
-    });
+    if (targetPlayerId !== profile.playerId) {
+      // FORCED CARD via dragging from hand! Pass turn to the victim instantly.
+      // Additionally clear local drawn state if you forced your drawn card.
+      if (drawnCard) setDrawnCard(null);
+      await updateGameState({
+        hands: updatedHands,
+        melds: updatedMelds,
+        meld_counts: updatedCounts,
+        current_player_id: targetPlayerId,
+        turn_phase: 'meld_or_discard',
+      });
+    } else {
+      // Extending OWN meld. Retain turn and compute phase.
+      const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
+      await updateGameState({
+        hands: updatedHands,
+        melds: updatedMelds,
+        meld_counts: updatedCounts,
+        turn_phase: nextPhase,
+      });
+    }
     
     if (!specificCardId) setSelectedCards(new Set());
   };
