@@ -173,20 +173,7 @@ export default function PokerTable({
         })}
       </div>
 
-      {/* Spectators strip */}
-      {spectators.length > 0 && (
-        <div className="absolute bottom-0 right-0 flex flex-col gap-1 bg-[#1a1a1a]/80 rounded-lg p-2 border border-[#333]">
-          <span className="text-xs text-gray-500">{t('watching', lang)}</span>
-          <div className="flex gap-1">
-            {spectators.map((s) => (
-              <div key={s.player_id} className="flex flex-col items-center" title={s.display_name}>
-                <span className="text-lg">{s.avatar}</span>
-                <span className="text-[9px] text-gray-500 truncate max-w-[40px]">{s.display_name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

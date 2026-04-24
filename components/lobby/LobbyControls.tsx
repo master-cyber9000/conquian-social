@@ -103,7 +103,7 @@ export default function LobbyControls({
         />
 
         <div className="pl-6 flex gap-2">
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-[80px]">
             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
             <input
               id="bet-amount-input"

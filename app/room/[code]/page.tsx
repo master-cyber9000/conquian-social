@@ -37,6 +37,7 @@ import WinnerSplash from '@/components/game/WinnerSplash';
 import DrawSplash from '@/components/game/DrawSplash';
 import CharacterCreation from '@/components/character/CharacterCreation';
 import Button from '@/components/ui/Button';
+import AudienceQueue from '@/components/lobby/AudienceQueue';
 import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useParticipants } from '@livekit/components-react';
 
 function VoiceController({ isMuted, onSpeakingUpdate, volumeMapRef }: { isMuted: boolean; onSpeakingUpdate: (ids: string[]) => void; volumeMapRef: React.MutableRefObject<Map<string, number>> }) {
@@ -760,8 +761,29 @@ export default function RoomPage() {
   };
 
   const handleProposeBet = async (amount: number) => {
+    const activeDisconnected = activePlayers.filter(p => !p.is_connected);
+    const stayingPlayers = activePlayers.filter(p => p.is_connected);
+    let spots = 4 - stayingPlayers.length;
+    let takenSeats = stayingPlayers.map(p => p.seat_number).filter(Boolean) as number[];
+    
+    for (const p of activeDisconnected) {
+      await updatePlayer(p.player_id, { is_spectator: true, seat_number: null, vote: null, is_ready: false });
+    }
+
+    let toPromote = spectators.filter(p => p.vote === 'queue').sort((a,b) => a.player_id.localeCompare(b.player_id)).slice(0, Math.max(0, spots));
+    
+    for (const p of toPromote) {
+       const nextSeat = [1, 2, 3, 4].find(s => !takenSeats.includes(s));
+       if (nextSeat) {
+          takenSeats.push(nextSeat);
+          await updatePlayer(p.player_id, { is_spectator: false, seat_number: nextSeat, vote: null, is_ready: false });
+       }
+    }
+
     await updateRoom({ bet_amount: amount });
-    for (const p of activePlayers) await updatePlayer(p.player_id, { vote: null, is_ready: false });
+    for (const p of stayingPlayers) {
+      await updatePlayer(p.player_id, { vote: null, is_ready: false });
+    }
   };
 
   const nonHostPlayers = activePlayers.filter((p) => p.player_id !== room?.host_id);
@@ -833,11 +855,15 @@ export default function RoomPage() {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4 py-6">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4 py-6 relative">
+          <div className="hidden lg:block absolute left-4 xl:left-12 top-1/2 -translate-y-1/2 z-20">
+            <AudienceQueue spectators={spectators} />
+          </div>
+
           {/* LOBBY */}
           {room?.status === 'lobby' && (
-            <div className="flex flex-col lg:flex-row gap-6 items-center w-full max-w-4xl">
-              <div className="flex-1 flex items-center justify-center min-h-[400px]">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center w-full max-w-[6rem] lg:max-w-5xl">
+              <div className="flex-1 flex items-center justify-center min-h-[400px] px-6 lg:px-28 w-full">
                 <PokerTable activePlayers={activePlayers} spectators={spectators}
                   localPlayerId={profile?.playerId ?? ''} gameState={gameState} melds={{}}
                   timeLeft={30} isSpectator={isSpectator}
@@ -866,20 +892,26 @@ export default function RoomPage() {
                       {startError}
                     </div>
                   )}
+                  <div className="flex justify-center mt-2">
+                     <Button id="step-down-btn" variant="ghost" size="sm" onClick={async () => {
+                        if (!profile) return;
+                        await updatePlayer(profile.playerId, { is_spectator: true, seat_number: null, vote: null, is_ready: false });
+                     }}>
+                        {lang === 'en' ? 'Step Down to Audience' : 'Pasar a la Audiencia'}
+                     </Button>
+                  </div>
                 </div>
               )}
 
               {isSpectator && (
-                <div className="flex flex-col items-center gap-3 p-6 bg-[#1a1a1a] border border-[#333] rounded-xl">
+                <div className="flex flex-col items-center gap-3 p-6 bg-[#1a1a1a] border border-[#333] rounded-xl w-64">
                   <span className="text-2xl">👁️</span>
-                  <p className="text-sm text-gray-400">{t('youAreSpectator', lang)}</p>
-                  <Button id="join-next-round-btn" variant="ghost" onClick={async () => {
+                  <p className="text-sm text-gray-400 text-center">{t('youAreSpectator', lang)}</p>
+                  <Button id="join-next-round-btn" variant={localPlayer?.vote === 'queue' ? 'gold' : 'ghost'} className="w-full" onClick={async () => {
                     if (!profile) return;
-                    const seats = activePlayers.map((p) => p.seat_number).filter(Boolean) as number[];
-                    const nextSeat = [1, 2, 3, 4].find((s) => !seats.includes(s));
-                    if (nextSeat) await updatePlayer(profile.playerId, { is_spectator: false, seat_number: nextSeat });
+                    await updatePlayer(profile.playerId, { vote: localPlayer?.vote === 'queue' ? null : 'queue' });
                   }}>
-                    {t('joinNextRound', lang)}
+                    {localPlayer?.vote === 'queue' ? '✓ ' + (lang === 'en' ? 'Queued' : 'En Cola') : t('joinNextRound', lang)}
                   </Button>
                 </div>
               )}
@@ -888,7 +920,7 @@ export default function RoomPage() {
 
           {/* PLAYING */}
           {room?.status === 'playing' && gameState && (
-            <div className="flex flex-col items-center gap-4 w-full max-w-4xl">
+            <div className="flex flex-col items-center gap-4 w-full max-w-[6rem] lg:max-w-5xl px-6 lg:px-28">
               <PokerTable activePlayers={activePlayers} spectators={spectators}
                 localPlayerId={profile?.playerId ?? ''} gameState={gameState}
                 melds={gameState.melds ?? {}} timeLeft={30} isSpectator={isSpectator}
