@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -21,12 +21,16 @@ export default function HomePage() {
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
-  const [pendingAction, setPendingAction] = useState<'create' | 'join' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [createError, setCreateError] = useState('');
 
-  const ensureProfile = (action: 'create' | 'join') => {
+  // Ref so the value is always fresh inside async callbacks and closures
+  const pendingAction = useRef<'create' | 'join' | null>(null);
+
+  // ── Ensure character profile before any action ─────────────────────────────
+  const ensureProfile = (action: 'create' | 'join'): boolean => {
     if (!profile) {
-      setPendingAction(action);
+      pendingAction.current = action;
       setShowCharacter(true);
       return false;
     }
@@ -35,11 +39,18 @@ export default function HomePage() {
 
   const handleProfileComplete = (data: { displayName: string; avatar: string; borderColor: string }) => {
     const p = saveProfile(data);
+    const action = pendingAction.current;
+    pendingAction.current = null;
     setShowCharacter(false);
-    if (pendingAction === 'create') createRoom(p.playerId, p.displayName, p.avatar, p.borderColor);
-    if (pendingAction === 'join') setShowJoin(true);
+
+    if (action === 'create') {
+      createRoom(p.playerId, p.displayName, p.avatar, p.borderColor);
+    } else if (action === 'join') {
+      setShowJoin(true);
+    }
   };
 
+  // ── Create Room ────────────────────────────────────────────────────────────
   const createRoom = async (
     playerId: string,
     displayName: string,
@@ -47,6 +58,7 @@ export default function HomePage() {
     borderColor: string
   ) => {
     setLoading(true);
+    setCreateError('');
     const code = generateRoomCode();
 
     const { error: roomErr } = await supabase.from('rooms').insert({
@@ -56,7 +68,19 @@ export default function HomePage() {
       pot: 0,
       bet_amount: 0,
     });
-    if (roomErr) { setLoading(false); return; }
+
+    if (roomErr) {
+      console.error('[createRoom] rooms insert failed:', roomErr);
+      setCreateError(
+        roomErr.code === '42P01'
+          ? lang === 'en'
+            ? '⚠️ Database not set up. Run supabase_schema.sql in your Supabase SQL Editor first.'
+            : '⚠️ La base de datos no está lista. Ejecuta supabase_schema.sql en tu Supabase SQL Editor.'
+          : `Error creating room: ${roomErr.message}`
+      );
+      setLoading(false);
+      return;
+    }
 
     const { error: playerErr } = await supabase.from('players').insert({
       room_code: code,
@@ -66,40 +90,74 @@ export default function HomePage() {
       border_color: borderColor,
       seat_number: 1,
       is_spectator: false,
-      balance: 10.00,
+      balance: 10.0,
       is_ready: false,
       vote: null,
       is_connected: true,
     });
-    if (playerErr) { setLoading(false); return; }
+
+    if (playerErr) {
+      console.error('[createRoom] players insert failed:', playerErr);
+      setCreateError(`Error setting up player: ${playerErr.message}`);
+      setLoading(false);
+      return;
+    }
 
     setLoading(false);
     router.push(`/room/${code}`);
   };
 
   const handleCreateRoom = () => {
+    setCreateError('');
     if (!ensureProfile('create')) return;
-    createRoom(profile!.playerId, profile!.displayName, profile!.avatar, profile!.borderColor);
+    createRoom(
+      profile!.playerId,
+      profile!.displayName,
+      profile!.avatar,
+      profile!.borderColor
+    );
   };
 
+  // ── Join Room ──────────────────────────────────────────────────────────────
   const handleJoinRoom = () => {
+    setCreateError('');
     if (!ensureProfile('join')) return;
     setShowJoin(true);
   };
 
   const handleJoinSubmit = async () => {
     const code = joinCode.trim().toUpperCase();
-    if (code.length !== 6) { setJoinError(t('invalidRoomCode', lang)); return; }
+    if (code.length !== 6) {
+      setJoinError(t('invalidRoomCode', lang));
+      return;
+    }
 
     setLoading(true);
-    const { data: room } = await supabase.from('rooms').select('*').eq('code', code).single();
-    if (!room) { setJoinError(t('roomNotFound', lang)); setLoading(false); return; }
+    const { data: room, error } = await supabase
+      .from('rooms')
+      .select('*')
+      .eq('code', code)
+      .single();
+
+    if (!room || error) {
+      console.error('[handleJoinSubmit] error:', error);
+      setJoinError(
+        error?.code === '42P01'
+          ? lang === 'en'
+            ? '⚠️ Database not set up yet.'
+            : '⚠️ Base de datos no configurada.'
+          : t('roomNotFound', lang)
+      );
+      setLoading(false);
+      return;
+    }
 
     setShowJoin(false);
     setLoading(false);
     router.push(`/room/${code}`);
   };
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-[#0f0f0f] flex flex-col">
       {/* Language toggle top right */}
@@ -112,13 +170,14 @@ export default function HomePage() {
         {/* Logo */}
         <div className="space-y-2">
           <div className="text-6xl mb-2">🃏</div>
-          <h1 className="text-5xl font-bold tracking-tight text-white" style={{ fontFamily: 'Georgia, serif' }}>
+          <h1
+            className="text-5xl font-bold tracking-tight text-white"
+            style={{ fontFamily: 'Georgia, serif' }}
+          >
             Conquian{' '}
             <span className="text-amber-400">Social</span>
           </h1>
-          <p className="text-lg text-gray-400 font-medium">
-            {t('tagline', lang)}
-          </p>
+          <p className="text-lg text-gray-400 font-medium">{t('tagline', lang)}</p>
         </div>
 
         {/* Description */}
@@ -133,7 +192,7 @@ export default function HomePage() {
             variant="gold"
             size="lg"
             fullWidth
-            loading={loading && pendingAction === 'create'}
+            loading={loading}
             onClick={handleCreateRoom}
           >
             🎮 {t('createRoom', lang)}
@@ -144,12 +203,28 @@ export default function HomePage() {
             size="lg"
             fullWidth
             onClick={handleJoinRoom}
+            disabled={loading}
           >
             🚪 {t('joinRoom', lang)}
           </Button>
         </div>
 
-        {/* How to play teaser */}
+        {/* Error banner */}
+        {createError && (
+          <div className="max-w-sm w-full bg-red-950 border border-red-700 rounded-xl px-4 py-3 text-sm text-red-300 text-left space-y-1">
+            <p>{createError}</p>
+            {createError.includes('supabase_schema') && (
+              <ol className="text-xs text-red-400 list-decimal list-inside space-y-0.5 mt-1">
+                <li>Open your Supabase project dashboard</li>
+                <li>Go to <strong>SQL Editor</strong></li>
+                <li>Paste and run <code className="bg-red-900 px-1 rounded">supabase_schema.sql</code></li>
+                <li>Go to <strong>Database → Replication</strong> and enable all 4 tables</li>
+              </ol>
+            )}
+          </div>
+        )}
+
+        {/* How to play */}
         <div className="max-w-sm w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-5 text-left space-y-3 mt-2">
           <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider">
             {lang === 'en' ? 'How to Play' : 'Cómo Jugar'}
@@ -190,16 +265,17 @@ export default function HomePage() {
 
       {/* Character Creation Modal */}
       {loaded && (
-        <CharacterCreation
-          open={showCharacter}
-          onComplete={handleProfileComplete}
-        />
+        <CharacterCreation open={showCharacter} onComplete={handleProfileComplete} />
       )}
 
       {/* Join Room Modal */}
       <Modal
         open={showJoin}
-        onClose={() => { setShowJoin(false); setJoinCode(''); setJoinError(''); }}
+        onClose={() => {
+          setShowJoin(false);
+          setJoinCode('');
+          setJoinError('');
+        }}
         title={t('joinRoom', lang)}
       >
         <div className="space-y-4">
@@ -207,13 +283,20 @@ export default function HomePage() {
             id="join-room-code-input"
             type="text"
             value={joinCode}
-            onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); }}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleJoinSubmit(); }}
+            onChange={(e) => {
+              setJoinCode(e.target.value.toUpperCase());
+              setJoinError('');
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleJoinSubmit();
+            }}
             placeholder={t('enterRoomCode', lang)}
             maxLength={6}
             className="w-full bg-[#111] border border-[#444] rounded-lg px-3 py-3 text-center text-xl font-mono font-bold text-white tracking-widest placeholder-gray-700 focus:outline-none focus:border-amber-500 uppercase"
           />
-          {joinError && <p className="text-sm text-red-400 text-center">{joinError}</p>}
+          {joinError && (
+            <p className="text-sm text-red-400 text-center">{joinError}</p>
+          )}
           <Button
             id="join-submit-btn"
             variant="gold"

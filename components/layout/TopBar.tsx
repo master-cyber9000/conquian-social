@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 interface TopBarProps {
   roomCode?: string;
   balance?: number;
+  bet?: number;
   pot?: number;
   isMuted?: boolean;
   onMuteToggle?: () => void;
@@ -18,6 +19,7 @@ interface TopBarProps {
 export default function TopBar({
   roomCode,
   balance,
+  bet,
   pot,
   isMuted = true,
   onMuteToggle,
@@ -87,7 +89,13 @@ export default function TopBar({
             {balance !== undefined && (
               <div className="text-center">
                 <div className="text-xs text-gray-500 uppercase tracking-wider">{t('balance', lang)}</div>
-                <div className="text-sm font-bold text-green-400">${balance.toFixed(2)}</div>
+                <div className="text-sm font-bold text-green-400">${Math.max(0, balance - (bet ?? 0)).toFixed(2)}</div>
+              </div>
+            )}
+            {bet !== undefined && bet > 0 && (
+              <div className="text-center">
+                <div className="text-xs text-rose-500/70 uppercase tracking-wider">{lang === 'en' ? 'Bet' : 'Apuesta'}</div>
+                <div className="text-sm font-bold text-rose-400">${bet.toFixed(2)}</div>
               </div>
             )}
             {pot !== undefined && (

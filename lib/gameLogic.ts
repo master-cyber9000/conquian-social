@@ -53,6 +53,13 @@ export function isValidMeld(cards: CardType[]): boolean {
   return isSet(cards) || isRun(cards);
 }
 
+export function sortMeld(cards: CardType[]): CardType[] {
+  if (isRun(cards)) {
+    return [...cards].sort((a, b) => RANK_VALUES[a.rank] - RANK_VALUES[b.rank]);
+  }
+  return cards; // Sets order doesn't matter
+}
+
 function isSet(cards: CardType[]): boolean {
   if (cards.length < 3 || cards.length > 4) return false;
   const rank = cards[0].rank;
@@ -80,12 +87,76 @@ export function canExtendMeld(meld: CardType[], card: CardType): boolean {
   return isValidMeld(extended);
 }
 
+// Can multiple cards extend an existing meld?
+export function canExtendMeldMulti(meld: CardType[], cards: CardType[]): boolean {
+  if (cards.length === 0) return false;
+  const extended = [...meld, ...cards];
+  return isValidMeld(extended);
+}
+
+// Extract cards from an existing meld and validate the remnants (supports splitting a run)
+export function extractCardsFromMeld(meld: CardType[], extractIds: string[]): CardType[][] | null {
+  const remaining = sortMeld(meld.filter((c) => !extractIds.includes(c.id)));
+  if (remaining.length === 0) return null; // Generally shouldn't cannibalize the whole thing
+  
+  // If the remnant is mathematically intact
+  if (isValidMeld(remaining)) return [remaining];
+
+  // If it was a run, see if it cleanly split into two valid chunks
+  if (isRun(meld)) {
+     const chunks: CardType[][] = [];
+     let currentChunk: CardType[] = [remaining[0]];
+     for (let i = 1; i < remaining.length; i++) {
+        if (RANK_VALUES[remaining[i].rank] === RANK_VALUES[currentChunk[currentChunk.length - 1].rank] + 1) {
+            currentChunk.push(remaining[i]);
+        } else {
+            chunks.push(currentChunk);
+            currentChunk = [remaining[i]];
+        }
+     }
+     chunks.push(currentChunk);
+
+     // Check if EVERY chunk is a valid 3+ sequence
+     if (chunks.every(chunk => chunk.length >= 3 && isValidMeld(chunk))) {
+         return chunks;
+     }
+  }
+
+  return null;
+}
+
+// Search all table melds to see if players grouped grouping precisely extends one natively
+export function findMultiCardExtensions(melds: Record<string, CardType[][]>, cards: CardType[]): { playerId: string, meldIndex: number } | null {
+  for (const [playerId, playerMelds] of Object.entries(melds)) {
+    for (let i = 0; i < playerMelds.length; i++) {
+        if (canExtendMeldMulti(playerMelds[i], cards)) {
+            return { playerId, meldIndex: i };
+        }
+    }
+  }
+  return null;
+}
+
 // Which melds can a given card extend?
 export function findExtendableMelds(melds: CardType[][], card: CardType): number[] {
   return melds
     .map((meld, i) => ({ meld, i }))
     .filter(({ meld }) => canExtendMeld(meld, card))
     .map(({ i }) => i);
+}
+
+// Find ALL force targets across every player's melds
+export function findAllForceTargets(
+  melds: Record<string, CardType[][]>,
+  card: CardType
+): { playerId: string; meldIndex: number }[] {
+  const targets: { playerId: string; meldIndex: number }[] = [];
+  for (const [playerId, playerMelds] of Object.entries(melds)) {
+    playerMelds.forEach((meld, meldIndex) => {
+      if (canExtendMeld(meld, card)) targets.push({ playerId, meldIndex });
+    });
+  }
+  return targets;
 }
 
 // ============================================================
@@ -100,10 +171,18 @@ export function countMeldedCards(melds: CardType[][]): number {
 // Turn progression
 // ============================================================
 
-export function nextPlayerClockwise(playerIds: string[], currentId: string): string {
-  const idx = playerIds.indexOf(currentId);
-  if (idx === -1) return playerIds[0];
-  return playerIds[(idx + 1) % playerIds.length];
+export function nextPlayerClockwise(playerIds: string[], currentId: string, foldedIds: string[] = []): string {
+  let idx = playerIds.indexOf(currentId);
+  if (idx === -1) idx = 0;
+  
+  for (let i = 1; i <= playerIds.length; i++) {
+    const nextIdx = (idx + i) % playerIds.length;
+    const candidate = playerIds[nextIdx];
+    if (!foldedIds.includes(candidate)) {
+      return candidate;
+    }
+  }
+  return currentId; // If everyone else is folded
 }
 
 // ============================================================
@@ -146,3 +225,35 @@ export function generateRoomCode(): string {
   }
   return code;
 }
+
+// ============================================================
+// Discard offer — priority resolution
+// ============================================================
+/**
+ * Given a set of claims {playerId: timestamp}, returns the playerId who wins
+ * the discard based on clockwise priority starting from currentPlayerId.
+ *
+ * Priority: currentPlayerId → next clockwise → ... (lastDiscardBy is excluded
+ * because you can't claim your own discard).
+ *
+ * Returns null if nobody claimed.
+ */
+export function resolveDiscardClaim(
+  claims: Record<string, number>,
+  playerIds: string[],
+  currentPlayerId: string,
+  lastDiscardBy: string | null
+): string | null {
+  if (Object.keys(claims).length === 0) return null;
+
+  const startIdx = playerIds.indexOf(currentPlayerId);
+  // Build clockwise order starting from currentPlayerId, skip the discarder
+  const ordered = [
+    ...playerIds.slice(startIdx),
+    ...playerIds.slice(0, startIdx),
+  ].filter((pid) => pid !== lastDiscardBy);
+
+  return ordered.find((pid) => pid in claims) ?? null;
+}
+
+export const OFFER_WINDOW_MS = 10_000; // 10 seconds

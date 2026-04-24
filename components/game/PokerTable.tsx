@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/lib/i18n';
 import { Player } from '@/lib/supabase';
@@ -21,8 +22,15 @@ interface PokerTableProps {
   canClaim: boolean;
   canDraw: boolean;
   canForce: boolean;
-  onExtendMeld: (playerId: string, meldIndex: number) => void;
+  onExtendMeld: (playerId: string, meldIndex: number, cardId?: string) => void;
   extendableMelds: Set<number>;
+  selectedTableCardIds: Set<string>;
+  onSelectTableCard: (cardId: string) => void;
+  // Offer system
+  offerCountdown: number;
+  discardClaims: Record<string, number>;
+  localPlayerId2: string; // passed separately to avoid confusion
+  forcedCardId?: string | null;
 }
 
 // Map seat positions around the table
@@ -49,6 +57,12 @@ export default function PokerTable({
   canForce,
   onExtendMeld,
   extendableMelds,
+  selectedTableCardIds,
+  onSelectTableCard,
+  offerCountdown,
+  discardClaims,
+  localPlayerId2,
+  forcedCardId,
 }: PokerTableProps) {
   const { lang } = useLanguage();
 
@@ -72,11 +86,11 @@ export default function PokerTable({
   const localMeldCount = meldCounts[localPlayerId] ?? 0;
 
   return (
-    <div className="relative w-full flex items-center justify-center" style={{ minHeight: '520px' }}>
+    <div className="relative w-full flex items-center justify-center" style={{ minHeight: '600px' }}>
       {/* The oval table */}
       <div
         className="poker-table relative rounded-[50%] flex items-center justify-center"
-        style={{ width: '520px', height: '360px', flexShrink: 0 }}
+        style={{ width: '640px', height: '440px', flexShrink: 0 }}
       >
         {/* Center content */}
         <div className="flex flex-col items-center gap-3 z-10">
@@ -101,12 +115,17 @@ export default function PokerTable({
             stockCount={stockCount}
             canClaim={canClaim}
             isActivePlayer={currentPlayerId === localPlayerId}
+            lastDiscardBy={gameState?.last_discard_by ?? null}
+            localPlayerId={localPlayerId}
             onClaim={onClaimDiscard}
             onDraw={onDraw}
             canDraw={canDraw}
             onForce={onForce}
             canForce={canForce}
             turnPhase={turnPhase}
+            offerCountdown={offerCountdown}
+            discardClaims={discardClaims}
+            allActivePlayers={activePlayers}
           />
         </div>
 
@@ -136,7 +155,12 @@ export default function PokerTable({
                 timeLeft={isActive ? timeLeft : 30}
                 position={pos}
                 extendableMelds={isLocal && isActive ? extendableMelds : new Set()}
-                onExtendMeld={(meldIdx) => onExtendMeld(player.player_id, meldIdx)}
+                onExtendMeld={(meldIdx, cardId) => onExtendMeld(player.player_id, meldIdx, cardId)}
+                isHoldingCard={isActive && turnPhase === 'meld_or_discard'}
+                selectableTable={isLocal && isActive && turnPhase === 'meld_or_discard'}
+                selectedTableCardIds={isLocal ? selectedTableCardIds : new Set()}
+                onSelectTableCard={onSelectTableCard}
+                forcedCardId={forcedCardId}
               />
             </div>
           );

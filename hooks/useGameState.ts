@@ -3,6 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase, GameState, CardType } from '@/lib/supabase';
 
+// Fill in safe defaults for new columns that may not exist in older DB rows
+function normalizeGameState(raw: unknown): GameState {
+  const data = raw as Record<string, unknown>;
+  return {
+    ...data,
+    offer_deadline: (data.offer_deadline as number | null) ?? null,
+    discard_claims: (data.discard_claims as Record<string, number> | null) ?? {},
+    pending_claim_card: (data.pending_claim_card as GameState['pending_claim_card'] | null) ?? null,
+    last_discard_by: (data.last_discard_by as string | null) ?? null,
+  } as GameState;
+}
+
 export function useGameState(roomCode: string) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +30,7 @@ export function useGameState(roomCode: string) {
       .eq('room_code', roomCode)
       .single()
       .then(({ data }) => {
-        if (data) setGameState(data as unknown as GameState);
+        if (data) setGameState(normalizeGameState(data));
         setLoading(false);
       });
 
@@ -35,7 +47,7 @@ export function useGameState(roomCode: string) {
         },
         (payload) => {
           if (payload.new) {
-            setGameState(payload.new as unknown as GameState);
+            setGameState(normalizeGameState(payload.new));
           }
         }
       )

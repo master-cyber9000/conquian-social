@@ -15,6 +15,7 @@ interface WinnerSplashProps {
   isLocalWinner: boolean;
   onPlayAgain: () => void;
   onNewBet: () => void;
+  onLeaveSeat: () => void;
 }
 
 export default function WinnerSplash({
@@ -24,10 +25,13 @@ export default function WinnerSplash({
   isLocalWinner,
   onPlayAgain,
   onNewBet,
+  onLeaveSeat,
 }: WinnerSplashProps) {
   const { lang } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gross, fee, net } = calculatePayout(pot);
+  const initialPotRef = useRef(pot);
+  const displayPot = initialPotRef.current > 0 ? initialPotRef.current : pot;
+  const { gross, fee, net } = calculatePayout(displayPot);
 
   useEffect(() => {
     if (!isLocalWinner) return;
@@ -88,12 +92,17 @@ export default function WinnerSplash({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <Button id="play-again-btn" variant="primary" fullWidth onClick={onPlayAgain}>
-            {t('playAgain', lang)}
-          </Button>
-          <Button id="new-bet-btn" variant="ghost" fullWidth onClick={onNewBet}>
-            {t('newBet', lang)}
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Button id="play-again-btn" variant="primary" fullWidth onClick={onPlayAgain}>
+              {t('playAgain', lang)}
+            </Button>
+            <Button id="new-bet-btn" variant="secondary" fullWidth onClick={onNewBet}>
+              {t('newBet', lang)}
+            </Button>
+          </div>
+          <Button id="leave-seat-btn" variant="ghost" fullWidth onClick={onLeaveSeat} className="text-red-400 hover:text-red-300">
+            {t('leaveSeat', lang)}
           </Button>
         </div>
       </div>

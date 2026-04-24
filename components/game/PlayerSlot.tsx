@@ -25,8 +25,13 @@ interface PlayerSlotProps {
   isConnected: boolean;
   timeLeft?: number; // 0-30
   position: 'top' | 'left' | 'right' | 'bottom';
-  onExtendMeld?: (meldIndex: number) => void;
+  onExtendMeld?: (meldIndex: number, cardId?: string) => void;
   extendableMelds?: Set<number>;
+  isHoldingCard?: boolean;
+  selectableTable?: boolean;
+  selectedTableCardIds?: Set<string>;
+  onSelectTableCard?: (cardId: string) => void;
+  forcedCardId?: string | null;
 }
 
 export default function PlayerSlot({
@@ -39,6 +44,11 @@ export default function PlayerSlot({
   position,
   onExtendMeld,
   extendableMelds = new Set(),
+  isHoldingCard = false,
+  selectableTable = false,
+  selectedTableCardIds,
+  onSelectTableCard,
+  forcedCardId,
 }: PlayerSlotProps) {
   const { lang } = useLanguage();
   const meldedCount = countMeldedCards(melds);
@@ -50,33 +60,24 @@ export default function PlayerSlot({
   const dashOffset = circumference - (timeLeft / 30) * circumference;
   const timerColor = timeLeft > 10 ? '#22c55e' : timeLeft > 5 ? '#f59e0b' : '#ef4444';
 
-  const positionClass = {
-    top: 'flex-col items-center',
+  const containerClass = {
+    top: 'flex-col-reverse items-center', // text above avatar (outside table)
     left: 'flex-col items-center',
     right: 'flex-col items-center',
-    bottom: 'flex-col items-center',
+    bottom: 'flex-col items-center',      // text below avatar (outside table)
+  }[position];
+
+  const meldPositionClass = {
+    top: 'absolute top-[100%] mt-3 left-1/2 -translate-x-1/2 z-20 w-[240px]',     // point inwards
+    bottom: 'absolute bottom-[100%] mb-3 left-1/2 -translate-x-1/2 z-20 w-[240px]', // point inwards
+    left: 'absolute left-[100%] ml-4 top-1/2 -translate-y-1/2 z-20 w-[240px]',      // point inwards
+    right: 'absolute right-[100%] mr-4 top-1/2 -translate-y-1/2 z-20 w-[240px]',    // point inwards
   }[position];
 
   return (
-    <div className={`flex ${positionClass} gap-1.5`}>
-      {/* Melds (shown above/beside avatar based on position) */}
-      {melds.length > 0 && (
-        <div className="flex gap-1 flex-wrap justify-center max-w-48">
-          {melds.map((meld, i) => (
-            <MeldGroup
-              key={i}
-              meld={meld}
-              index={i}
-              size="sm"
-              canExtend={extendableMelds.has(i)}
-              onExtend={onExtendMeld}
-            />
-          ))}
-        </div>
-      )}
-
+    <div className={`relative flex ${containerClass} gap-1.5`}>
       {/* Avatar Bubble */}
-      <div className="relative flex flex-col items-center gap-1">
+      <div className="relative flex flex-col items-center gap-1 z-10">
         {/* Timer arc (only when active) */}
         {isActive && (
           <svg
@@ -123,6 +124,13 @@ export default function PlayerSlot({
           )}
         </div>
 
+        {/* Holding card indicator */}
+        {isHoldingCard && (
+          <div className="absolute -top-1 -right-3 w-7 h-9 rounded bg-blue-900 border-[1.5px] border-white shadow-xl flex items-center justify-center transform rotate-12 z-20 overflow-hidden">
+            <div className="w-[calc(100%-2px)] h-[calc(100%-2px)] bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.1),rgba(255,255,255,0.1)_2px,transparent_2px,transparent_4px)] rounded-[1px]"></div>
+          </div>
+        )}
+
         {/* Ready badge */}
         {player.is_ready && (
           <span className="chip chip-green absolute -bottom-1 text-[10px] px-1.5 py-0">
@@ -132,13 +140,13 @@ export default function PlayerSlot({
       </div>
 
       {/* Player info */}
-      <div className="flex flex-col items-center gap-0.5">
+      <div className="flex flex-col items-center gap-0.5 z-10 w-fit">
         <span className="text-xs font-semibold text-white truncate max-w-[80px]">
           {isLocal ? `★ ${player.display_name}` : player.display_name}
         </span>
-        <span className="text-xs text-green-400">${player.balance.toFixed(2)}</span>
+        <span className="text-[10px] text-green-400 font-medium">${player.balance.toFixed(2)}</span>
         {meldedCount > 0 && (
-          <span className="text-[10px] text-amber-400">
+          <span className="text-[9px] font-bold tracking-widest uppercase text-amber-400/80">
             {meldedCount}/10 {t('meld', lang)}
           </span>
         )}
@@ -148,6 +156,26 @@ export default function PlayerSlot({
           </span>
         )}
       </div>
+
+      {/* Melds (absolute positioned pointing to the table center) */}
+      {melds.length > 0 && (
+        <div className={`${meldPositionClass} flex gap-1.5 flex-wrap justify-center`}>
+          {melds.map((meld, i) => (
+            <MeldGroup
+              key={i}
+              meld={meld}
+              index={i}
+              size="sm"
+              canExtend={extendableMelds.has(i)}
+              onExtend={onExtendMeld}
+              selectable={selectableTable}
+              selectedIds={selectedTableCardIds}
+              onSelectCard={onSelectTableCard}
+              highlightedCardId={forcedCardId}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

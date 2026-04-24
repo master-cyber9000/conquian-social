@@ -16,8 +16,8 @@ interface CardProps {
   selected?: boolean;
   onClick?: () => void;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
   faceDown?: boolean;
+  highlighted?: boolean | 'green'; // golden glow for drawn card staging, green for forced cards
 }
 
 export default function Card({
@@ -27,6 +27,7 @@ export default function Card({
   disabled = false,
   size = 'md',
   faceDown = false,
+  highlighted = false,
 }: CardProps) {
   const dimensions = {
     sm: 'w-10 h-14',
@@ -59,9 +60,11 @@ export default function Card({
       onClick={!disabled ? onClick : undefined}
       onKeyDown={!disabled && onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); } : undefined}
       aria-pressed={selected}
-      aria-label={`${card.rank} of ${card.suit}`}
       className={`card-face ${dimensions[size]} flex flex-col justify-between p-1 flex-shrink-0 ${
         selected ? 'selected' : ''
+      } ${
+        highlighted === 'green' ? 'ring-[3px] ring-green-500 ring-offset-1 ring-offset-transparent shadow-[0_0_20px_rgba(34,197,94,0.7)] z-10' :
+        highlighted ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent shadow-lg shadow-amber-500/40' : ''
       } ${disabled ? 'opacity-60 cursor-not-allowed' : onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Top-left rank + suit */}

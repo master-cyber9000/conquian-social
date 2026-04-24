@@ -21,7 +21,7 @@ export const translations = {
   notReady: { en: 'Not Ready', es: 'No Listo' },
   meld: { en: 'Meld', es: 'Bajar' },
   discard: { en: 'Discard', es: 'Descartar' },
-  draw: { en: 'Draw', es: 'Robar' },
+  draw: { en: 'Draw', es: 'Comer' },
   force: { en: 'Force', es: 'Forzar' },
   takeSeat: { en: 'Take Seat', es: 'Tomar Asiento' },
   leaveSeat: { en: 'Leave Seat', es: 'Dejar Asiento' },
@@ -87,7 +87,7 @@ export const translations = {
   turnTimer: { en: 'seconds left', es: 'segundos restantes' },
   autoPass: { en: 'Time up! Auto-passing...', es: '¡Tiempo! Pasando automáticamente...' },
   discardOffered: { en: 'Discard offered — claim it?', es: '¿Tomar el descarte?' },
-  drawOffered: { en: 'Draw from stock', es: 'Robar del mazo' },
+  drawOffered: { en: 'Draw from stock', es: 'Comer del mazo' },
 
   // Chat
   chatPlaceholder: { en: 'Say something...', es: 'Di algo...' },

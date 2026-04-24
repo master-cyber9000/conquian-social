@@ -53,10 +53,14 @@ export type Database = {
           discard_pile: CardType[];
           stock_pile: CardType[];
           current_player_id: string;
-          turn_phase: 'offer_discard' | 'draw_or_take' | 'meld_or_discard' | 'between_turns';
+          turn_phase: 'cambia' | 'offer_discard' | 'draw_or_take' | 'meld_or_discard' | 'between_turns';
           round_number: number;
           meld_counts: Record<string, number>;
-          offer_claimed_by?: string | null;
+          // Timed discard offer fields
+          offer_deadline: number | null;          // unix ms when offer window closes
+          discard_claims: Record<string, any>;    // { playerId: claimTimestamp or CardType }
+          pending_claim_card: CardType | null;    // card awarded to winner, awaiting pickup
+          last_discard_by: string | null;         // who discarded (can't claim own card)
         };
         Insert: Database['public']['Tables']['game_state']['Row'];
         Update: Partial<Database['public']['Tables']['game_state']['Row']>;
