@@ -536,10 +536,18 @@ export default function RoomPage() {
       return;
     }
 
-    // If melding before drawing (offer_discard phase), stay in offer_discard
-    // so the player still needs to claim/draw. Otherwise move to meld_or_discard.
-    const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
-    await updateGameState({ hands: updatedHands, melds: updatedMelds, meld_counts: updatedCounts, turn_phase: nextPhase });
+    if (targetPlayerId !== profile.playerId) {
+      await updateGameState({
+        hands: updatedHands,
+        melds: updatedMelds,
+        meld_counts: updatedCounts,
+        current_player_id: targetPlayerId,
+        turn_phase: 'meld_or_discard',
+      });
+    } else {
+      const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
+      await updateGameState({ hands: updatedHands, melds: updatedMelds, meld_counts: updatedCounts, turn_phase: nextPhase });
+    }
   };
 
   // ── Extend an existing meld with a hand card ──────────────────────────────
