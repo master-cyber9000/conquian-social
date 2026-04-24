@@ -31,19 +31,19 @@ export default function Card({
   highlighted = false,
 }: CardProps) {
   const dimensions = {
-    sm: 'w-[10vw] max-w-[44px] h-[14vw] max-h-[61px]',
+    sm: 'w-[8.5vw] max-w-[42px] h-[12vw] max-h-[58px]',
     md: 'w-14 h-20',
     lg: 'w-16 h-24',
   };
 
   const rankSizes = {
-    sm: 'text-[6vw] sm:text-[26px]',
+    sm: 'text-[5.5vw] sm:text-[24px]',
     md: 'text-[32px]',
     lg: 'text-[42px]',
   };
 
   const suitSizes = {
-    sm: 'text-[5vw] sm:text-[22px] mt-0.5 sm:mt-1',
+    sm: 'text-[4.5vw] sm:text-[20px] mt-0.5 sm:mt-1',
     md: 'text-3xl mt-2',
     lg: 'text-4xl mt-3',
   };
