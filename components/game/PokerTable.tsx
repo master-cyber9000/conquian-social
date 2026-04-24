@@ -133,7 +133,42 @@ export default function PokerTable({
           />
         </div>
 
-        {/* Player slots positioned around the oval */}
+        {/* MOBILE OPPONENTS TOP ROW (Hidden on Desktop) */}
+        <div className="flex lg:hidden absolute -top-[120px] left-1/2 -translate-x-1/2 w-[100vw] justify-evenly items-start z-30 pointer-events-none">
+          {orderedPlayers.map((player, i) => {
+            const pos = positions[i];
+            if (pos === 'bottom') return null; // Skip local player
+            
+            const isActive = player.player_id === currentPlayerId;
+            const isLocal = player.player_id === localPlayerId;
+            const playerMelds = melds[player.player_id] ?? [];
+
+            return (
+              <div key={`mobile-opp-${player.player_id}`} className="transform scale-[0.8] sm:scale-90 pointer-events-auto origin-top">
+                <PlayerSlot
+                  player={player}
+                  melds={playerMelds}
+                  isActive={isActive}
+                  isLocal={isLocal}
+                  isConnected={player.is_connected}
+                  timeLeft={isActive ? timeLeft : 30}
+                  position="top"
+                  extendableMelds={isLocal && isActive ? extendableMelds : new Set()}
+                  onExtendMeld={(meldIdx, cardId) => onExtendMeld(player.player_id, meldIdx, cardId)}
+                  isHoldingCard={isActive && turnPhase === 'meld_or_discard'}
+                  selectableTable={false}
+                  selectedTableCardIds={new Set()}
+                  onSelectTableCard={onSelectTableCard}
+                  forcedCardId={forcedCardId}
+                  isSpeaking={speakingPlayerIds.includes(player.display_name)}
+                  volumeMapRef={volumeMapRef}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Player slots positioned around the oval */ }
         {orderedPlayers.map((player, i) => {
           const pos = positions[i];
           const isActive = player.player_id === currentPlayerId;
@@ -149,7 +184,7 @@ export default function PokerTable({
           };
 
           return (
-            <div key={player.player_id} style={posStyles[pos]}>
+            <div key={player.player_id} style={posStyles[pos]} className={pos !== 'bottom' ? 'hidden lg:block' : ''}>
               <PlayerSlot
                 player={player}
                 melds={playerMelds}

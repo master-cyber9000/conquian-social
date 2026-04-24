@@ -52,18 +52,18 @@ export default function TopBar({
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-[#0f0f0f]/90 backdrop-blur-md border-b border-[#2a2a2a]">
-      <div className="flex items-center justify-between px-4 py-2 max-w-7xl mx-auto">
+      <div className="flex flex-wrap items-center justify-between px-3 sm:px-4 py-2 max-w-7xl mx-auto gap-y-2 gap-x-2">
         {/* Left: Room info */}
-        <div className="flex items-center gap-3">
-          <span className="text-amber-500 font-bold text-sm tracking-widest font-serif">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-amber-500 font-bold text-xs sm:text-sm tracking-widest font-serif hidden sm:inline-block">
             CONQUIAN SOCIAL
           </span>
           {roomCode && (
             <>
-              <span className="text-gray-600">|</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">{t('roomCode', lang)}</span>
-                <span className="text-white font-mono font-bold tracking-widest bg-[#1c1c1c] border border-[#333] rounded px-2 py-0.5 text-sm">
+              <span className="hidden sm:inline-block text-gray-600">|</span>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <span className="text-[10px] sm:text-xs text-gray-400">{t('roomCode', lang)}</span>
+                <span className="text-white font-mono font-bold tracking-widest bg-[#1c1c1c] border border-[#333] rounded px-1.5 sm:px-2 py-0.5 text-xs sm:text-sm">
                   {roomCode}
                 </span>
                 <button
@@ -89,11 +89,11 @@ export default function TopBar({
 
         {/* Center: Balance + Pot */}
         {roomCode && (
-          <div className="flex items-center gap-6">
+          <div className="flex items-center justify-center gap-2 sm:gap-6 w-full order-3 sm:order-none sm:w-auto">
             {balance !== undefined && (
               <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase tracking-wider">{t('balance', lang)}</div>
-                <div className="text-sm font-bold text-green-400">${Math.max(0, balance - (bet ?? 0)).toFixed(2)}</div>
+                <div className="text-[9px] sm:text-xs text-gray-500 uppercase tracking-wider">{t('balance', lang)}</div>
+                <div className="text-xs sm:text-sm font-bold text-green-400">${Math.max(0, balance - (bet ?? 0)).toFixed(2)}</div>
               </div>
             )}
             {bet !== undefined && bet > 0 && (
@@ -104,8 +104,8 @@ export default function TopBar({
             )}
             {pot !== undefined && (
               <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase tracking-wider">{t('pot', lang)}</div>
-                <div className="text-sm font-bold text-amber-400">${pot.toFixed(2)}</div>
+                <div className="text-[9px] sm:text-xs text-gray-500 uppercase tracking-wider">{t('pot', lang)}</div>
+                <div className="text-xs sm:text-sm font-bold text-amber-400">${pot.toFixed(2)}</div>
               </div>
             )}
             {isSpectator && (
