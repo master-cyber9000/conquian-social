@@ -37,15 +37,23 @@ import WinnerSplash from '@/components/game/WinnerSplash';
 import DrawSplash from '@/components/game/DrawSplash';
 import CharacterCreation from '@/components/character/CharacterCreation';
 import Button from '@/components/ui/Button';
-import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant } from '@livekit/components-react';
+import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useParticipants } from '@livekit/components-react';
 
-function VoiceController({ isMuted }: { isMuted: boolean }) {
+function VoiceController({ isMuted, onSpeakingUpdate }: { isMuted: boolean; onSpeakingUpdate: (ids: string[]) => void }) {
   const { localParticipant } = useLocalParticipant();
+  const participants = useParticipants();
+
   useEffect(() => {
     if (localParticipant) {
       localParticipant.setMicrophoneEnabled(!isMuted).catch(console.error);
     }
   }, [isMuted, localParticipant]);
+
+  useEffect(() => {
+    const speakers = participants.filter(p => p.isSpeaking).map(p => p.identity);
+    onSpeakingUpdate(speakers);
+  }, [participants, onSpeakingUpdate]);
+
   return null;
 }
 
@@ -77,6 +85,7 @@ export default function RoomPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isDeafened, setIsDeafened] = useState(false);
+  const [speakingIds, setSpeakingIds] = useState<string[]>([]);
   const [joined, setJoined] = useState(false);
   const [showWinner, setShowWinner] = useState<string | null>(null);
   const [showDraw, setShowDraw] = useState(false);
@@ -824,6 +833,7 @@ export default function RoomPage() {
                   onExtendMeld={() => {}} extendableMelds={new Set()}
                   offerCountdown={0} discardClaims={{}} localPlayerId2={profile?.playerId ?? ''}
                   selectedTableCardIds={new Set()} onSelectTableCard={() => {}}
+                  speakingPlayerIds={speakingIds}
                 />
               </div>
 
@@ -877,6 +887,7 @@ export default function RoomPage() {
                 discardClaims={gameState.discard_claims ?? {}}
                 localPlayerId2={profile?.playerId ?? ''}
                 forcedCardId={forcedCardId}
+                speakingPlayerIds={speakingIds}
               />
 
               {!isSpectator && (
@@ -951,7 +962,7 @@ export default function RoomPage() {
           token={liveKitToken}
           className="hidden"
         >
-          <VoiceController isMuted={isMuted} />
+          <VoiceController isMuted={isMuted} onSpeakingUpdate={setSpeakingIds} />
           {!isDeafened && <RoomAudioRenderer />}
         </LiveKitRoom>
       )}

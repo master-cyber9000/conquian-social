@@ -7,18 +7,6 @@ import { countMeldedCards } from '@/lib/gameLogic';
 import MeldGroup from './MeldGroup';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/lib/i18n';
-import { useLocalParticipant, useRemoteParticipant } from '@livekit/components-react';
-
-function AudioIndicator({ identity, isLocal }: { identity: string; isLocal: boolean }) {
-  const remote = useRemoteParticipant(identity);
-  const { localParticipant } = useLocalParticipant();
-  const p = isLocal ? localParticipant : remote;
-
-  if (!p?.isSpeaking) return null;
-  return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-green-500/30 blur-md animate-pulse z-0 pointer-events-none" />
-  );
-}
 
 const BORDER_COLORS: Record<string, string> = {
   gold: '#c9a84c',
@@ -44,6 +32,7 @@ interface PlayerSlotProps {
   selectedTableCardIds?: Set<string>;
   onSelectTableCard?: (cardId: string) => void;
   forcedCardId?: string | null;
+  isSpeaking?: boolean;
 }
 
 export default function PlayerSlot({
@@ -61,6 +50,7 @@ export default function PlayerSlot({
   selectedTableCardIds,
   onSelectTableCard,
   forcedCardId,
+  isSpeaking = false,
 }: PlayerSlotProps) {
   const { lang } = useLanguage();
   const meldedCount = countMeldedCards(melds);
@@ -121,7 +111,9 @@ export default function PlayerSlot({
         )}
 
         {/* Dynamic Voice Activity Expansion Ring */}
-        <AudioIndicator identity={player.display_name} isLocal={isLocal} />
+        {isSpeaking && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-green-500/30 blur-md animate-pulse z-0 pointer-events-none transition-opacity duration-300" />
+        )}
 
         <div
           className={`avatar-bubble w-14 h-14 ${isActive ? 'active-turn' : ''} relative z-10`}

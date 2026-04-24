@@ -31,6 +31,7 @@ interface PokerTableProps {
   discardClaims: Record<string, number>;
   localPlayerId2: string; // passed separately to avoid confusion
   forcedCardId?: string | null;
+  speakingPlayerIds?: string[];
 }
 
 // Map seat positions around the table
@@ -63,6 +64,7 @@ export default function PokerTable({
   discardClaims,
   localPlayerId2,
   forcedCardId,
+  speakingPlayerIds = [],
 }: PokerTableProps) {
   const { lang } = useLanguage();
 
@@ -161,6 +163,7 @@ export default function PokerTable({
                 selectedTableCardIds={isLocal ? selectedTableCardIds : new Set()}
                 onSelectTableCard={onSelectTableCard}
                 forcedCardId={forcedCardId}
+                isSpeaking={speakingPlayerIds.includes(player.display_name)}
               />
             </div>
           );
