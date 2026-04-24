@@ -212,7 +212,7 @@ export default function RoomPage() {
     const newCardId = currentCards.find(id => !prevCards.includes(id));
 
     if (turnPhase === 'meld_or_discard' && !drawnCard && !gameState.pending_claim_card && isMyTurn) {
-        if (newCardId && Date.now() - lastLocalMeldRef.current > 1500) setForcedCardId(newCardId);
+        if (newCardId && Date.now() - lastLocalMeldRef.current > 5000) setForcedCardId(newCardId);
     } else {
         setForcedCardId(null);
     }
