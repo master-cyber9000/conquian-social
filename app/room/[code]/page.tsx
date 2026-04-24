@@ -37,7 +37,17 @@ import WinnerSplash from '@/components/game/WinnerSplash';
 import DrawSplash from '@/components/game/DrawSplash';
 import CharacterCreation from '@/components/character/CharacterCreation';
 import Button from '@/components/ui/Button';
-import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
+import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant } from '@livekit/components-react';
+
+function VoiceController({ isMuted }: { isMuted: boolean }) {
+  const { localParticipant } = useLocalParticipant();
+  useEffect(() => {
+    if (localParticipant) {
+      localParticipant.setMicrophoneEnabled(!isMuted).catch(console.error);
+    }
+  }, [isMuted, localParticipant]);
+  return null;
+}
 
 export default function RoomPage() {
   const params = useParams();
@@ -936,9 +946,9 @@ export default function RoomPage() {
         <LiveKitRoom
           serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
           token={liveKitToken}
-          audio={!isMuted}
           className="hidden"
         >
+          <VoiceController isMuted={isMuted} />
           <RoomAudioRenderer />
         </LiveKitRoom>
       )}
