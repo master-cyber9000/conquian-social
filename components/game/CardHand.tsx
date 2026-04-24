@@ -228,49 +228,8 @@ export default function CardHand({
         </div>
       )}
 
-      {/* ── Hand label ───────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2">
-        <p className="text-xs text-gray-500">{t('yourHand', lang)}</p>
-        <p className="text-[10px] text-gray-700">
-          {lang === 'en' ? '— drag to reorder' : '— arrastra para reordenar'}
-        </p>
-      </div>
-
-      {/* ── Hand cards (draggable) ───────────────────────────────────── */}
-      <div className="flex flex-wrap justify-center gap-1.5">
-      {orderedCards.map((card) => {
-          const handleCardClick = () => {
-            onSelect(card.id);
-          };
-
-          return (
-            <div
-              key={card.id}
-              draggable={true}
-              onDragStart={(e) => handleDragStart(e, card.id)}
-              onDragOver={(e) => handleDragOver(e, card.id)}
-              onDrop={handleDrop}
-              className={'cursor-grab active:cursor-grabbing'}
-            >
-              <button
-                id={`hand-card-${card.id}`}
-                onClick={handleCardClick}
-                className={`focus:outline-none group relative ${turnPhase === 'cambia' && lockedCambiaCardId === card.id ? 'ring-[3px] ring-blue-500 rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.6)]' : receivedCambiaCardId === card.id ? 'ring-[3px] ring-green-500 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.6)] transition-all duration-[3000ms]' : ''}`}
-              >
-                <Card card={card} selected={selectedIds.has(card.id)} size="sm" />
-              </button>
-            </div>
-          );
-        })}
-        {orderedCards.length === 0 && (
-          <p className="text-xs text-gray-600 italic">
-            {lang === 'en' ? 'No cards in hand' : 'Sin cartas en mano'}
-          </p>
-        )}
-      </div>
-
       {/* ── Stable Action & Hint Footer ───────────────────────────────── */}
-      <div className="flex flex-col items-center justify-start h-[80px] w-full gap-2 mt-2">
+      <div className="flex flex-col items-center justify-start min-h-[60px] w-full gap-2 mb-2">
         {!drawnCard && (isYourTurn || turnPhase === 'cambia') && (
           <div className="flex gap-2 items-center">
             {turnPhase === 'cambia' && onCambiar ? (
@@ -334,6 +293,47 @@ export default function CardHand({
                 ? 'Select 1 card and click Discard to end your turn — or select cards to meld first'
                 : 'Selecciona 1 carta y haz clic en Descartar — o selecciona para bajar primero'
               : ''}
+          </p>
+        )}
+      </div>
+
+      {/* ── Hand label ───────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2">
+        <p className="text-xs text-gray-500">{t('yourHand', lang)}</p>
+        <p className="text-[10px] text-gray-700">
+          {lang === 'en' ? '— drag to reorder' : '— arrastra para reordenar'}
+        </p>
+      </div>
+
+      {/* ── Hand cards (draggable) ───────────────────────────────────── */}
+      <div className="flex flex-nowrap overflow-x-auto overflow-y-visible custom-scrollbar items-center justify-start lg:justify-center gap-1.5 w-full pb-4 px-2 max-w-[100vw]">
+      {orderedCards.map((card) => {
+          const handleCardClick = () => {
+            onSelect(card.id);
+          };
+
+          return (
+            <div
+              key={card.id}
+              draggable={true}
+              onDragStart={(e) => handleDragStart(e, card.id)}
+              onDragOver={(e) => handleDragOver(e, card.id)}
+              onDrop={handleDrop}
+              className={'cursor-grab active:cursor-grabbing shrink-0'}
+            >
+              <button
+                id={`hand-card-${card.id}`}
+                onClick={handleCardClick}
+                className={`focus:outline-none group relative ${turnPhase === 'cambia' && lockedCambiaCardId === card.id ? 'ring-[3px] ring-blue-500 rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.6)]' : receivedCambiaCardId === card.id ? 'ring-[3px] ring-green-500 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.6)] transition-all duration-[3000ms]' : ''}`}
+              >
+                <Card card={card} selected={selectedIds.has(card.id)} size="sm" />
+              </button>
+            </div>
+          );
+        })}
+        {orderedCards.length === 0 && (
+          <p className="text-xs text-gray-600 italic">
+            {lang === 'en' ? 'No cards in hand' : 'Sin cartas en mano'}
           </p>
         )}
       </div>

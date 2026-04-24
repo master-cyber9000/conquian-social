@@ -274,7 +274,7 @@ export default function RoomPage() {
     // Natively deduct buy-in right at execution start rather than deferring it to explicitly handle Tie cycles cleanly
     for (const p of activePlayers) {
       if (!p.is_spectator) {
-        await updatePlayer(p.player_id, { balance: Math.max(0, p.balance - (room.bet_amount ?? 0)) });
+        await updatePlayer(p.player_id, { balance: Math.max(0, p.balance - (room.bet_amount ?? 0)), is_ready: false });
       }
     }
     
@@ -856,6 +856,7 @@ export default function RoomPage() {
         )}
 
         <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4 py-6 relative">
+          {/* Audience Queue - Desktop pinned and Mobile generic */}
           <div className="hidden lg:block absolute left-4 xl:left-12 top-1/2 -translate-y-1/2 z-20">
             <AudienceQueue spectators={spectators} />
           </div>
@@ -935,6 +936,19 @@ export default function RoomPage() {
                 speakingPlayerIds={speakingIds} volumeMapRef={volumeMapRef}
               />
 
+              {isSpectator && (
+                <div className="flex flex-col items-center gap-3 p-6 bg-[#1a1a1a] border border-[#333] rounded-xl w-64 mt-4 z-20">
+                  <span className="text-2xl">👁️</span>
+                  <p className="text-sm text-gray-400 text-center">{t('youAreSpectator', lang)}</p>
+                  <Button id="join-next-round-btn-playing" variant={localPlayer?.vote === 'queue' ? 'gold' : 'ghost'} className="w-full" onClick={async () => {
+                    if (!profile) return;
+                    await updatePlayer(profile.playerId, { vote: localPlayer?.vote === 'queue' ? null : 'queue' });
+                  }}>
+                    {localPlayer?.vote === 'queue' ? '✓ ' + (lang === 'en' ? 'Queued' : 'En Cola') : t('joinNextRound', lang)}
+                  </Button>
+                </div>
+              )}
+
               {!isSpectator && (
                 <div className="w-full max-w-2xl text-center">
                   {turnPhase === 'meld_or_discard' && forcedCardId && isMyTurn && (
@@ -975,6 +989,11 @@ export default function RoomPage() {
               <Button variant="primary" onClick={handlePlayAgain}>{t('playAgain', lang)}</Button>
             </div>
           )}
+
+          {/* Mobile Audience Queue at the bottom */}
+          <div className="lg:hidden w-full flex justify-center mt-6 z-10 pb-12">
+            <AudienceQueue spectators={spectators} />
+          </div>
         </div>
       </div>
 

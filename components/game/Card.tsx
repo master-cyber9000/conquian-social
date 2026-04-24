@@ -43,9 +43,9 @@ export default function Card({
   };
 
   const suitSizes = {
-    sm: 'text-xl mt-[-4px]',
-    md: 'text-3xl mt-[-6px]',
-    lg: 'text-4xl mt-[-8px]',
+    sm: 'text-xl mt-1',
+    md: 'text-3xl mt-2',
+    lg: 'text-4xl mt-3',
   };
 
   const color = isRed(card.suit) ? 'text-red-600' : 'text-gray-900';
