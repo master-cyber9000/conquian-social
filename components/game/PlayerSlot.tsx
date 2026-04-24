@@ -8,7 +8,7 @@ import MeldGroup from './MeldGroup';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/lib/i18n';
 
-function VolumeRing({ identity, volumeMapRef }: { identity: string; volumeMapRef: React.MutableRefObject<Map<string, number>> }) {
+function VolumeRing({ identity, volumeMapRef, color }: { identity: string; volumeMapRef: React.MutableRefObject<Map<string, number>>; color: string }) {
   const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ function VolumeRing({ identity, volumeMapRef }: { identity: string; volumeMapRef
     const animate = () => {
       if (ringRef.current && volumeMapRef?.current) {
          const vol = volumeMapRef.current.get(identity) || 0;
-         const scale = 1 + (vol * 4.5);
+         const scale = 1 + Math.min(vol * 0.8, 0.25);
          ringRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
       }
       frame = requestAnimationFrame(animate);
@@ -28,8 +28,8 @@ function VolumeRing({ identity, volumeMapRef }: { identity: string; volumeMapRef
   return (
     <div 
       ref={ringRef}
-      className="absolute top-1/2 left-1/2 w-[72px] h-[72px] rounded-full bg-cyan-500/40 blur-md pointer-events-none transition-transform duration-[50ms] z-0"
-      style={{ transform: 'translate(-50%, -50%) scale(1)' }}
+      className="absolute top-1/2 left-1/2 w-14 h-14 rounded-full transition-transform duration-[50ms] z-0"
+      style={{ transform: 'translate(-50%, -50%) scale(1)', backgroundColor: color }}
     />
   );
 }
@@ -140,7 +140,7 @@ export default function PlayerSlot({
 
         {/* Dynamic Voice Activity Expansion Ring */}
         {isSpeaking && volumeMapRef && (
-          <VolumeRing identity={player.display_name} volumeMapRef={volumeMapRef} />
+          <VolumeRing identity={player.display_name} volumeMapRef={volumeMapRef} color={borderColor} />
         )}
 
         <div
