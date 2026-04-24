@@ -306,7 +306,7 @@ export default function CardHand({
       </div>
 
       {/* ── Hand cards (draggable) ───────────────────────────────────── */}
-      <div className="flex flex-nowrap overflow-x-auto overflow-y-visible custom-scrollbar items-center justify-start lg:justify-center gap-1.5 w-full pb-4 px-2 max-w-[100vw]">
+      <div className="flex flex-nowrap overflow-x-auto overflow-y-visible custom-scrollbar items-center justify-start lg:justify-center gap-0.5 lg:gap-1.5 w-full pb-4 px-1 lg:px-2 max-w-[100vw]">
       {orderedCards.map((card) => {
           const handleCardClick = () => {
             onSelect(card.id);
