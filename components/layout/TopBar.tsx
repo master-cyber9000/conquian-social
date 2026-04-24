@@ -11,8 +11,10 @@ interface TopBarProps {
   balance?: number;
   bet?: number;
   pot?: number;
-  isMuted?: boolean;
-  onMuteToggle?: () => void;
+  isMicMuted?: boolean;
+  toggleMic?: () => void;
+  isSpeakerMuted?: boolean;
+  toggleSpeaker?: () => void;
   isSpectator?: boolean;
 }
 
@@ -21,8 +23,10 @@ export default function TopBar({
   balance,
   bet,
   pot,
-  isMuted = true,
-  onMuteToggle,
+  isMicMuted = true,
+  toggleMic,
+  isSpeakerMuted = false,
+  toggleSpeaker,
   isSpectator = false,
 }: TopBarProps) {
   const { lang } = useLanguage();
@@ -124,21 +128,39 @@ export default function TopBar({
               </svg>
             </button>
           )}
-          {onMuteToggle && (
+          {toggleSpeaker && (
             <button
-              id="mute-toggle-btn"
-              onClick={onMuteToggle}
-              title={isMuted ? t('unmute', lang) : t('mute', lang)}
-              className={`transition-colors ${isMuted ? 'text-red-400 hover:text-red-300' : 'text-green-400 hover:text-green-300'}`}
+              id="speaker-toggle-btn"
+              onClick={toggleSpeaker}
+              title={isSpeakerMuted ? lang === 'en' ? 'Unmute Speakers' : 'Activar Sonido' : lang === 'en' ? 'Deafen' : 'Silenciar Sonido'}
+              className={`transition-colors ${isSpeakerMuted ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-gray-300'}`}
             >
-              {isMuted ? (
+              {isSpeakerMuted ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                 </svg>
               ) : (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0 0l-3-3m3 3l3-3M9 9a3 3 0 000 6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+              )}
+            </button>
+          )}
+          {toggleMic && (
+            <button
+              id="mic-toggle-btn"
+              onClick={toggleMic}
+              title={isMicMuted ? t('unmute', lang) : t('mute', lang)}
+              className={`transition-colors ${isMicMuted ? 'text-red-400 hover:text-red-300' : 'text-green-400 hover:text-green-300'}`}
+            >
+              {isMicMuted ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 01-14 0v-2m-1.5 6.5A9.953 9.953 0 0012 19c-2.43 0-4.654-.863-6.425-2.29m13.25 0A9.953 9.953 0 0112 19v4m0 0h-4m4 0h4m-5.5-12.5V3a3 3 0 00-6 0v1.5m8.5 4.5v-1a3 3 0 00-1-2.2m-6 3.7A2.99 2.99 0 019 10V8m8.5 4.5l-13-13" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 01-14 0v-2M12 18v4m0 0h-4m4 0h4m-4-11V3a3 3 0 00-6 0v4a3 3 0 006 0z" />
                 </svg>
               )}
             </button>

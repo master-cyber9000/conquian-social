@@ -7,6 +7,18 @@ import { countMeldedCards } from '@/lib/gameLogic';
 import MeldGroup from './MeldGroup';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/lib/i18n';
+import { useLocalParticipant, useRemoteParticipant } from '@livekit/components-react';
+
+function AudioIndicator({ identity, isLocal }: { identity: string; isLocal: boolean }) {
+  const remote = useRemoteParticipant(identity);
+  const { localParticipant } = useLocalParticipant();
+  const p = isLocal ? localParticipant : remote;
+
+  if (!p?.isSpeaking) return null;
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-green-500/30 blur-md animate-pulse z-0 pointer-events-none" />
+  );
+}
 
 const BORDER_COLORS: Record<string, string> = {
   gold: '#c9a84c',
@@ -108,8 +120,11 @@ export default function PlayerSlot({
           </svg>
         )}
 
+        {/* Dynamic Voice Activity Expansion Ring */}
+        <AudioIndicator identity={player.display_name} isLocal={isLocal} />
+
         <div
-          className={`avatar-bubble w-14 h-14 ${isActive ? 'active-turn' : ''}`}
+          className={`avatar-bubble w-14 h-14 ${isActive ? 'active-turn' : ''} relative z-10`}
           style={{ borderColor }}
         >
           <span className="text-2xl leading-none select-none">{player.avatar}</span>

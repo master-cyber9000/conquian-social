@@ -76,6 +76,7 @@ export default function RoomPage() {
 
   const [chatOpen, setChatOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [isDeafened, setIsDeafened] = useState(false);
   const [joined, setJoined] = useState(false);
   const [showWinner, setShowWinner] = useState<string | null>(null);
   const [showDraw, setShowDraw] = useState(false);
@@ -783,7 +784,9 @@ export default function RoomPage() {
     <div className="min-h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
       <TopBar roomCode={code} balance={localPlayer?.balance} bet={room?.bet_amount} 
         pot={room?.status === 'playing' || room?.status === 'finished' ? room?.pot : (room?.bet_amount ?? 0) * activePlayers.length}
-        isMuted={isMuted} onMuteToggle={() => setIsMuted((m) => !m)} isSpectator={isSpectator} />
+        isMicMuted={isMuted} toggleMic={() => setIsMuted((m) => !m)}
+        isSpeakerMuted={isDeafened} toggleSpeaker={() => setIsDeafened((d) => !d)}
+        isSpectator={isSpectator} />
 
       <div className={`flex-1 flex flex-col mt-[57px] ${chatOpen ? 'mr-72' : ''} transition-[margin] duration-300`}>
         {/* Turn / offer indicator */}
@@ -949,7 +952,7 @@ export default function RoomPage() {
           className="hidden"
         >
           <VoiceController isMuted={isMuted} />
-          <RoomAudioRenderer />
+          {!isDeafened && <RoomAudioRenderer />}
         </LiveKitRoom>
       )}
 
