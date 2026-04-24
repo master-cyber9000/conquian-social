@@ -67,17 +67,17 @@ export default function Card({
       onClick={!disabled ? onClick : undefined}
       onKeyDown={!disabled && onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); } : undefined}
       aria-pressed={selected}
-      className={`card-face ${dimensions[size]} flex flex-col items-center justify-center py-0.5 flex-shrink-0 relative overflow-hidden ${
+      className={`card-face ${dimensions[size]} flex flex-col items-start justify-start px-0.5 sm:px-1 py-0.5 sm:py-1 flex-shrink-0 relative overflow-hidden ${
         selected ? 'selected' : ''
       } ${
         highlighted === 'green' ? 'ring-[3px] ring-green-500 ring-offset-1 ring-offset-transparent shadow-[0_0_20px_rgba(34,197,94,0.7)] z-10' :
         highlighted ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent shadow-lg shadow-amber-500/40' : ''
       } ${disabled ? 'opacity-60 cursor-not-allowed' : onClick ? 'cursor-pointer' : ''}`}
     >
-      <div className={`leading-none font-black ${color} ${rankSizes[size]} tracking-tighter`}>
+      <div className={`leading-none font-black ${color} ${rankSizes[size]} tracking-tighter ml-0.5`}>
         {card.rank}
       </div>
-      <div className={`leading-none ${color} ${suitSizes[size]}`}>
+      <div className={`leading-none ${color} ${suitSizes[size]} ml-0.5 sm:ml-1`}>
         {SUIT_SYMBOL[card.suit]}
       </div>
     </div>

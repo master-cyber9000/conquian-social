@@ -921,7 +921,7 @@ export default function RoomPage() {
 
           {/* PLAYING */}
           {room?.status === 'playing' && gameState && (
-            <div className="flex flex-col items-center gap-4 w-full max-w-full lg:max-w-5xl px-6 lg:px-28">
+            <div className="flex flex-col items-center gap-4 w-full max-w-full lg:max-w-5xl px-1 sm:px-6 lg:px-28 z-20">
               <PokerTable activePlayers={activePlayers} spectators={spectators}
                 localPlayerId={profile?.playerId ?? ''} gameState={gameState}
                 melds={gameState.melds ?? {}} timeLeft={30} isSpectator={isSpectator}

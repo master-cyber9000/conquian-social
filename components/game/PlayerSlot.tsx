@@ -194,7 +194,7 @@ export default function PlayerSlot({
 
       {/* Melds (absolute positioned pointing to the table center) */}
       {melds.length > 0 && (
-        <div className={`${meldPositionClass} flex gap-1.5 flex-wrap justify-center`}>
+        <div className={`${meldPositionClass} flex flex-col items-center sm:flex-row sm:items-start gap-1 sm:gap-1.5 flex-wrap justify-center`}>
           {melds.map((meld, i) => (
             <MeldGroup
               key={i}
