@@ -559,8 +559,7 @@ export default function RoomPage() {
           turn_phase: 'offer_discard',
         });
       } else {
-        const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
-        await updateGameState({ hands: updatedHands, melds: updatedMelds, meld_counts: updatedCounts, turn_phase: nextPhase });
+        await updateGameState({ hands: updatedHands, melds: updatedMelds, meld_counts: updatedCounts, turn_phase: turnPhase });
       }
     }
   };
@@ -625,12 +624,11 @@ export default function RoomPage() {
         });
       } else {
         // Extending OWN meld. Retain turn and compute phase.
-        const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
         await updateGameState({
           hands: updatedHands,
           melds: updatedMelds,
           meld_counts: updatedCounts,
-          turn_phase: nextPhase,
+          turn_phase: turnPhase,
         });
       }
     }
