@@ -162,7 +162,7 @@ export default function ChatPanel({
 
       {/* ── Expanded panel ── */}
       {!isCollapsed && (
-        <div className="fixed right-0 top-[57px] bottom-0 w-72 bg-[#111] border-l border-[#2a2a2a] flex flex-col z-30 slide-in-right">
+        <div className="fixed right-0 top-[57px] sm:top-[60px] bottom-0 w-full sm:w-72 bg-[#111]/95 sm:bg-[#111] backdrop-blur-md sm:backdrop-blur-none border-l border-[#2a2a2a] flex flex-col z-50 slide-in-right shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a] bg-[#0f0f0f]">
             <div className="flex items-center gap-2">
@@ -178,11 +178,11 @@ export default function ChatPanel({
             <button
               id="close-chat-btn"
               onClick={onToggle}
-              className="text-gray-500 hover:text-white transition-colors p-1 rounded"
+              className="text-gray-300 hover:text-white transition-colors p-2 sm:p-1.5 bg-gray-800/80 rounded-md ring-1 ring-white/10"
               title={t('closeChat', lang)}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>

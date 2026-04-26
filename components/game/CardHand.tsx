@@ -147,7 +147,8 @@ export default function CardHand({
   // Combined payload
   const combinedPayload = [...(drawnCard ? [drawnCard] : []), ...selectedCards, ...selectedTableCards];
   
-  const isMultiExtension = !!findMultiCardExtensions(melds, combinedPayload);
+  const multiExtensionMatch = findMultiCardExtensions(melds, combinedPayload, localPlayerId);
+  const isMultiExtension = !!multiExtensionMatch;
   const meldValidNative = combinedPayload.length >= 3 && isValidMeld(combinedPayload);
   const validAssembly = extractionValid && (meldValidNative || isMultiExtension);
 
@@ -161,7 +162,12 @@ export default function CardHand({
     if (!extractionValid) return lang === 'en' ? 'Extraction Invalid' : 'Extracción Inválida';
     
     if (meldValidNative) return lang === 'en' ? `Meld (${combinedPayload.length} cards)` : `Bajar (${combinedPayload.length} cartas)`;
-    if (isMultiExtension) return lang === 'en' ? 'Add to Meld' : 'Añadir al Grupo';
+    if (isMultiExtension) {
+      if (multiExtensionMatch?.playerId !== localPlayerId) {
+         return lang === 'en' ? 'Force Card' : 'Forzar Carta';
+      }
+      return lang === 'en' ? 'Add to Meld' : 'Añadir al Grupo';
+    }
     
     const need = Math.max(0, 3 - combinedPayload.length);
     return need > 0 ? (lang === 'en' ? `Select ${need} more` : `Selecciona ${need} más`) : t('meld', lang);

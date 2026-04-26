@@ -125,9 +125,17 @@ export function extractCardsFromMeld(meld: CardType[], extractIds: string[]): Ca
   return null;
 }
 
-// Search all table melds to see if players grouped grouping precisely extends one natively
-export function findMultiCardExtensions(melds: Record<string, CardType[][]>, cards: CardType[]): { playerId: string, meldIndex: number } | null {
+export function findMultiCardExtensions(melds: Record<string, CardType[][]>, cards: CardType[], prioritizePlayerId?: string): { playerId: string, meldIndex: number } | null {
+  if (prioritizePlayerId && melds[prioritizePlayerId]) {
+    for (let i = 0; i < melds[prioritizePlayerId].length; i++) {
+        if (canExtendMeldMulti(melds[prioritizePlayerId][i], cards)) {
+            return { playerId: prioritizePlayerId, meldIndex: i };
+        }
+    }
+  }
+
   for (const [playerId, playerMelds] of Object.entries(melds)) {
+    if (playerId === prioritizePlayerId) continue;
     for (let i = 0; i < playerMelds.length; i++) {
         if (canExtendMeldMulti(playerMelds[i], cards)) {
             return { playerId, meldIndex: i };

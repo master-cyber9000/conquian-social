@@ -545,8 +545,23 @@ export default function RoomPage() {
         turn_phase: 'meld_or_discard',
       });
     } else {
-      const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
-      await updateGameState({ hands: updatedHands, melds: updatedMelds, meld_counts: updatedCounts, turn_phase: nextPhase });
+      if (remainingHand.length === 0) {
+        // Player is 'mocho' (depleted hand via forces). Auto-pass turn since they can't discard!
+        const basePidList = activePlayers.filter((p) => !p.is_spectator).map((p) => p.player_id);
+        const foldedPids = basePidList.filter((id) => id === profile.playerId || (updatedHands[id]?.length ?? 0) === 10);
+        const nextPid = nextPlayerClockwise(basePidList, profile.playerId, foldedPids);
+        
+        await updateGameState({
+          hands: updatedHands,
+          melds: updatedMelds,
+          meld_counts: updatedCounts,
+          current_player_id: nextPid,
+          turn_phase: 'offer_discard',
+        });
+      } else {
+        const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
+        await updateGameState({ hands: updatedHands, melds: updatedMelds, meld_counts: updatedCounts, turn_phase: nextPhase });
+      }
     }
   };
 
@@ -596,14 +611,28 @@ export default function RoomPage() {
         turn_phase: 'meld_or_discard',
       });
     } else {
-      // Extending OWN meld. Retain turn and compute phase.
-      const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
-      await updateGameState({
-        hands: updatedHands,
-        melds: updatedMelds,
-        meld_counts: updatedCounts,
-        turn_phase: nextPhase,
-      });
+      if (remainingHand.length === 0) {
+        const basePidList = activePlayers.filter((p) => !p.is_spectator).map((p) => p.player_id);
+        const foldedPids = basePidList.filter((id) => id === profile.playerId || (updatedHands[id]?.length ?? 0) === 10);
+        const nextPid = nextPlayerClockwise(basePidList, profile.playerId, foldedPids);
+        
+        await updateGameState({
+          hands: updatedHands,
+          melds: updatedMelds,
+          meld_counts: updatedCounts,
+          current_player_id: nextPid,
+          turn_phase: 'offer_discard',
+        });
+      } else {
+        // Extending OWN meld. Retain turn and compute phase.
+        const nextPhase = !drawnCard && turnPhase === 'offer_discard' ? 'offer_discard' : 'meld_or_discard';
+        await updateGameState({
+          hands: updatedHands,
+          melds: updatedMelds,
+          meld_counts: updatedCounts,
+          turn_phase: nextPhase,
+        });
+      }
     }
     
     if (!specificCardId) setSelectedCards(new Set());
