@@ -906,7 +906,7 @@ export default function RoomPage() {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4 py-6 relative">
+        <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 gap-2 sm:gap-4 py-1 sm:py-6 relative leading-tight">
           {/* Audience Queue - Desktop pinned and Mobile generic */}
           <div className="hidden lg:block absolute left-4 xl:left-12 top-1/2 -translate-y-1/2 z-20">
             <AudienceQueue spectators={spectators} />
@@ -929,7 +929,7 @@ export default function RoomPage() {
               </div>
 
               {!isSpectator && localPlayer && room && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 absolute lg:relative z-40 lg:z-auto top-1/2 lg:top-auto left-1/2 lg:left-auto -translate-x-1/2 lg:translate-x-0 -translate-y-1/2 lg:translate-y-0 bg-[#0f0f0f]/95 lg:bg-transparent backdrop-blur-xl lg:backdrop-blur-none p-5 lg:p-0 rounded-3xl lg:rounded-none w-[92%] sm:w-[80%] lg:w-auto max-w-sm lg:max-w-none shadow-[0_0_50px_rgba(0,0,0,0.8)] lg:shadow-none border border-white/10 lg:border-none">
                   <LobbyControls players={activePlayers} localPlayer={localPlayer} room={room}
                     isHost={isHost} onVote={handleVote} onProposeBet={handleProposeBet}
                     onStartGame={startGame} canStart={canStart}
@@ -1021,7 +1021,7 @@ export default function RoomPage() {
                     hasCambiaLocked={!!(gameState.discard_claims && gameState.discard_claims[profile?.playerId ?? ''])}
                     lockedCambiaCardId={gameState.discard_claims?.[profile?.playerId ?? '']?.id}
                     onFold={handleFold}
-                    foldAllowed={isMyTurn && drawnCardSource === 'stock' && (gameState?.discard_pile?.length ?? 0) < activePlayers.filter(p => !p.is_spectator).length && myMelds.length === 0}
+                    foldAllowed={isMyTurn && drawnCardSource === 'stock' && myMelds.length === 0 && (gameState?.stock_pile?.length ?? 0) > (52 - (activePlayers.filter(p => !p.is_spectator).length * 9) - activePlayers.filter(p => !p.is_spectator).length)}
                     melds={gameState.melds ?? {}}
                     tableCardIds={selectedTableCards}
                     localPlayerId={profile?.playerId ?? ''}

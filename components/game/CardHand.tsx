@@ -208,9 +208,9 @@ export default function CardHand({
               onClick={() => canMeldNow && onMeld(combinedPayload)} disabled={!canMeldNow}>
               {meldLabel()}
             </Button>
-            {canForceDrawn && onForceDrawn && (
-              <Button id="force-drawn-btn" variant={isSelfForceDrawn ? 'primary' : 'danger'} size="sm" className="flex-1" onClick={onForceDrawn}>
-                {isSelfForceDrawn ? (lang === 'en' ? 'Add to Meld' : 'Añadir al Grupo') : (lang === 'en' ? '⚡ Force' : '⚡ Forzar')}
+            {canForceDrawn && !isSelfForceDrawn && onForceDrawn && (
+              <Button id="force-drawn-btn" variant="danger" size="sm" className="flex-1" onClick={onForceDrawn}>
+                {lang === 'en' ? '⚡ Force' : '⚡ Forzar'}
               </Button>
             )}
             {drawnCardSource === 'stock' && onDiscardDrawnCard && (
