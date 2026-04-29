@@ -16,6 +16,7 @@ interface TopBarProps {
   isSpeakerMuted?: boolean;
   toggleSpeaker?: () => void;
   isSpectator?: boolean;
+  onHowToPlay?: () => void;
 }
 
 export default function TopBar({
@@ -28,6 +29,7 @@ export default function TopBar({
   isSpeakerMuted = false,
   toggleSpeaker,
   isSpectator = false,
+  onHowToPlay,
 }: TopBarProps) {
   const { lang } = useLanguage();
   const [copied, setCopied] = useState(false);
@@ -116,6 +118,16 @@ export default function TopBar({
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
+          {onHowToPlay && (
+            <button
+              id="how-to-play-btn"
+              onClick={onHowToPlay}
+              title={lang === 'en' ? 'How to Play' : 'Cómo Jugar'}
+              className="w-7 h-7 flex items-center justify-center rounded-full border border-[#444] text-gray-400 hover:text-amber-400 hover:border-amber-500/50 transition-all duration-200 text-sm font-bold"
+            >
+              ?
+            </button>
+          )}
           {roomCode && (
             <button
               id="invite-friends-btn"

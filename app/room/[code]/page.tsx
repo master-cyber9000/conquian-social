@@ -38,6 +38,7 @@ import DrawSplash from '@/components/game/DrawSplash';
 import CharacterCreation from '@/components/character/CharacterCreation';
 import Button from '@/components/ui/Button';
 import AudienceQueue from '@/components/lobby/AudienceQueue';
+import HowToPlayModal from '@/components/ui/HowToPlayModal';
 import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useParticipants } from '@livekit/components-react';
 
 function VoiceController({ isMuted, onSpeakingUpdate, volumeMapRef }: { isMuted: boolean; onSpeakingUpdate: (ids: string[]) => void; volumeMapRef: React.MutableRefObject<Map<string, number>> }) {
@@ -105,6 +106,7 @@ export default function RoomPage() {
   const [showDraw, setShowDraw] = useState(false);
   const [startLoading, setStartLoading] = useState(false);
   const [startError, setStartError] = useState('');
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   // Drawn/claimed card staging — stays here until player melds or discards it
   const [drawnCard, setDrawnCard] = useState<CardType | null>(null);
@@ -881,7 +883,8 @@ export default function RoomPage() {
         pot={room?.status === 'playing' || room?.status === 'finished' ? room?.pot : (room?.bet_amount ?? 0) * activePlayers.length}
         isMicMuted={isMuted} toggleMic={() => setIsMuted((m) => !m)}
         isSpeakerMuted={isDeafened} toggleSpeaker={() => setIsDeafened((d) => !d)}
-        isSpectator={isSpectator} />
+        isSpectator={isSpectator}
+        onHowToPlay={() => setShowHowToPlay(true)} />
 
       <div className={`flex-1 flex flex-col mt-[57px] ${chatOpen ? 'mr-72' : ''} transition-[margin] duration-300`}>
         {/* Turn / offer indicator */}
@@ -1086,6 +1089,8 @@ export default function RoomPage() {
         <DrawSplash newPot={(room?.pot ?? 0) + ((room?.bet_amount ?? 0) * activePlayers.filter(p => !p.is_spectator).length)}
           onContinue={async () => { setShowDraw(false); await handlePlayAgain(); }} />
       )}
+
+      <HowToPlayModal open={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
     </div>
   );
 }
